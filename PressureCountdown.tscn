@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=2]
+
+[sub_resource type="DynamicFontData" id=1]
+
+[sub_resource type="DynamicFont" id=2]
+size = 20
+font_data = SubResource( 1 )
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = -724.0
+margin_bottom = -480.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="."]
+margin_left = 13.0
+margin_top = 6.0
+margin_right = 250.0
+margin_bottom = 42.0
+custom_fonts/font = SubResource( 2 )
+text = "Pressure Countdown
+"
+__meta__ = {
+"_edit_use_anchors_": false
+}
