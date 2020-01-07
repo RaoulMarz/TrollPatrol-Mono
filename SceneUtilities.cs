@@ -1,5 +1,6 @@
 ﻿using Godot;
 using System;
+using System.Threading;
 
 namespace TrollPatrolMono
 {
@@ -7,13 +8,21 @@ namespace TrollPatrolMono
     {
         public PackedScene newScene;
 
+        public static void ThreadSleep(int milliSeconds)
+        {
+            if (milliSeconds >= 10)
+            {
+                System.Threading.Thread.Sleep(milliSeconds);
+            }
+        }
+
         public void CleanPreviousScenes(Spatial referenceScene, String callSource = "")
         {
             int numChildren = referenceScene.GetTree().Root.GetChildCount();
             GD.Print($"CleanPreviousScenes() - scenes count = {numChildren}, called from {callSource} \n");
             Node previousScene = referenceScene.GetTree().Root.GetChild(0);
             /*
-            var props = GetProperties(previousScene);
+            var props = Diagnostics.GetProperties(previousScene);
             if (props.Count > 0)
             {
                 PrintObjectProperties("previousScene", introTimer);
@@ -64,6 +73,13 @@ namespace TrollPatrolMono
             return res;
         }
 
+        public static Rect2 GetApplicationWindowExtent(Node2D referenceScene)
+        {
+            Rect2 res;
+            res = referenceScene.GetTree().Root.GetVisibleRect();
+            return res;
+        }
+
         public static Vector2 GetExtentOffsetsForCenter(Spatial referenceScene, Control graphicsControl)
         {
             Vector2 res = new Vector2(100.0f, 20.0f);
@@ -75,6 +91,22 @@ namespace TrollPatrolMono
                 {
                     GD.Print($"GetExtentOffsetsForCenter(), appExtent = {appExtent}, graphicsControl size={graphicsControl.RectSize}\n");
                     res = new Vector2( (appExtent.Size.x / 2.0f) - (graphicsControl.RectSize.x / 2.0f), (appExtent.Size.y / 2.0f) - (graphicsControl.RectSize.y / 2.0f) );
+                }
+            }
+            return res;
+        }
+
+        public static Vector2 GetExtentOffsetsForCenter(Node2D referenceScene, Control graphicsControl)
+        {
+            Vector2 res = new Vector2(100.0f, 20.0f);
+            if (graphicsControl != null)
+            {
+                Rect2 appExtent = GetApplicationWindowExtent(referenceScene);
+                GD.Print($"GetExtentOffsetsForCenter(), appExtent = {appExtent}\n");
+                if ((appExtent.Size.x >= 100.0f) && (graphicsControl.RectSize.x >= 100.0f))
+                {
+                    GD.Print($"GetExtentOffsetsForCenter(), appExtent = {appExtent}, graphicsControl size={graphicsControl.RectSize}\n");
+                    res = new Vector2((appExtent.Size.x / 2.0f) - (graphicsControl.RectSize.x / 2.0f), (appExtent.Size.y / 2.0f) - (graphicsControl.RectSize.y / 2.0f));
                 }
             }
             return res;

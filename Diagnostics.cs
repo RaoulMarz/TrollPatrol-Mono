@@ -1,5 +1,4 @@
 ﻿using Godot;
-using System;
 using System.Text;
 using System.Collections.Generic;
 
@@ -54,7 +53,6 @@ namespace TrollPatrolMono
             {
                 GD.Print($"{tag} #properties =  {props.Count}");
 
-                //string propValueStr = "";
                 StringBuilder sb = new StringBuilder();
                 foreach (var prop in props)
                 {

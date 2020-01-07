@@ -53,6 +53,8 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DangerObstruction.cs" />
+    <Compile Include="Fireball.cs" />
     <Compile Include="GameMap.cs" />
     <Compile Include="GameMenu.cs" />
     <Compile Include="HUDCountdown.cs" />
@@ -64,9 +66,14 @@
     <Compile Include="Enums\GameStatus.cs" />
     <Compile Include="GameSingleton.cs" />
     <Compile Include="GameState.cs" />
+    <Compile Include="SpawnFireballsPool.cs" />
+    <Compile Include="DataTypes\PairTimestamp.cs" />
+    <Compile Include="DataTypes\DebugCategory.cs" />
+    <Compile Include="DangerObstructionsPool.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Enums\" />
+    <Folder Include="DataTypes\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
