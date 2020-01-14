@@ -1,0 +1,27 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workbench ActiveDocument="SpawnFireballsPool.cs">
+    <Files>
+      <File FileName="GameMap.cs" Line="1" Column="1" />
+      <File FileName="DangerObstructionsPool.cs" Line="34" Column="17" />
+      <File FileName="SpawnFireballsPool.cs" Line="14" Column="57" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="TrollPatrol-Mono" expanded="True">
+            <Node name="TrollPatrol-Mono" expanded="True">
+              <Node name="References" expanded="True" />
+              <Node name="SpawnFireballsPool.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>

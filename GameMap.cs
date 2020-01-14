@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using TrollPatrolMono.Enums;
+using TrollPatrolMono.DataTypes;
+using TrollPatrolMono.Framework;
 
 namespace TrollPatrolMono
 {
@@ -10,17 +12,20 @@ namespace TrollPatrolMono
 		private Timer gameTimer;
 		private int gameTimerCounter = 0;
 		private GameMenu gameMenu;
+		private GamePauseMenu pauseMenu;
 		private bool gamePlayActive = false;
 		private MovementEntity movementEntity = MovementEntity.MOVEMENT_ENTITY_NONE;
 		private TileMap tileMapWorld;
 		private HUDCountdown hudCountdown;
 		private Troll trollPlayer;
 		private CanvasLayer canvasLayer;
+		private CountdownGameTimer fireballCountdownTimer = null;
 		/* DangerObstructions should be added manually */
 		private SpawnFireballsPool fireballsPool = null;
 		const string gameMenuResource = "res://GameMenu.tscn";
 		const string hudCountdownResource = "res://HUDCountdown.tscn";
 		const string trollResource = "res://Troll.tscn";
+		const string pauseGameResource = "res://GamePauseMenu.tscn";
 		/* Monitor signal "game_started", and perform the required game set up */
 
 		// Called when the node enters the scene tree for the first time.
@@ -37,7 +42,7 @@ namespace TrollPatrolMono
 				gameTimer.Connect("timeout", this, nameof(_on_GameTimer_timeout));
 				gameTimer.Start();
 			}
-			
+
 			tileMapWorld = this.GetNodeOrNull<TileMap>("tileMapWorld");
 			Diagnostics.PrintNullValueMessage(tileMapWorld, "tileMapWorld");
 			canvasLayer = this.GetNodeOrNull<CanvasLayer>("canvasLayer");
@@ -59,7 +64,35 @@ namespace TrollPatrolMono
 			//LoadHudCountdown();
 			LoadTrollPlayer();
 			LoadGameMenu();
+			LoadPauseMenu();
 			InitialiseFireballPool();
+		}
+
+
+		private void SpawnRandomFireballs(AlignmentArea alignment, int fireballs, float topOffsetVariability)
+		{
+			var allocatedFireballs = fireballsPool.SpawnFireballArray(fireballs);
+			if (alignment == AlignmentArea.ALIGNMENT_TOP)
+			{
+
+			}
+		}
+
+		private void StartTimedGame(MiniGameCategory gameCategory)
+		{
+			switch (gameCategory)
+			{
+				case MiniGameCategory.MINIGAME_FIREBALLS_CRUNCH:
+					{
+						fireballCountdownTimer = new CountdownGameTimer(DateTime.Now, 90);
+						fireballCountdownTimer.Start();
+						break;
+					}
+				default:
+					{
+						break;
+					}
+			}
 		}
 
 		private void _on_GameMenu_Ready()
@@ -81,6 +114,21 @@ namespace TrollPatrolMono
 		{
 			GD.Print("GameMap, InitialiseFireballPool() called");
 			fireballsPool = new SpawnFireballsPool(80);
+		}
+
+		private void LoadPauseMenu()
+		{
+			PackedScene menuPauseScene = (PackedScene)ResourceLoader.Load(pauseGameResource);
+			GD.Print("GameMap, LoadGameMenu() started");
+			Diagnostics.PrintNullValueMessage(menuPauseScene, "menuPauseScene");
+			if (menuPauseScene != null)
+			{
+				pauseMenu = (GamePauseMenu)menuPauseScene.Instance();
+				pauseMenu.Visible = false;
+				SceneUtilities.PlaceControlCentered(this, pauseMenu);
+				if (canvasLayer != null)
+					canvasLayer.AddChild(pauseMenu);
+			}
 		}
 
 		private void LoadGameMenu()
@@ -123,6 +171,7 @@ namespace TrollPatrolMono
 			if (trollPlayerScene != null)
 			{
 				trollPlayer = (Troll)trollPlayerScene.Instance();
+				trollPlayer.GlobalPosition = new Vector2(500.0f, 380.0f);
 				AddChild(trollPlayer);
 				GD.Print("GameMap, LoadTrollPlayer() Adding {trollPlayer} to scene");
 			}
@@ -135,14 +184,14 @@ namespace TrollPatrolMono
 
 		private void AdjustHudCountdown()
 		{
-			if ( (trollPlayer != null) && (hudCountdown != null) )
+			if ((trollPlayer != null) && (hudCountdown != null))
 			{
 				//if (followMode == FOLLOW_PLAYER)
 				//    hudCountdown.RectPosition = trollPlayer.followCamera.GlobalPosition + new Vector2(-300.0f, -200.0f);
 
-			   //hudCountdown.RectPosition = tileMapWorld.GlobalPosition + new Vector2(300.0f, 100.0f);
-			   hudCountdown.SetGlobalPosition(GlobalPosition + new Vector2(40.0f, 30.0f));
-			   //GD.Print($"AdjustHudCountdown() called, HUD position={hudCountdown.RectPosition}");
+				//hudCountdown.RectPosition = tileMapWorld.GlobalPosition + new Vector2(300.0f, 100.0f);
+				hudCountdown.SetGlobalPosition(GlobalPosition + new Vector2(40.0f, 30.0f));
+				//GD.Print($"AdjustHudCountdown() called, HUD position={hudCountdown.RectPosition}");
 			}
 		}
 
@@ -166,10 +215,29 @@ namespace TrollPatrolMono
 			{
 				gameTimer.Start();
 			}
-			if ( (gamePlayActive) && (trollPlayer != null) )
+			if ((gamePlayActive) && (trollPlayer != null))
 			{
 				trollPlayer._Process(delta);
 				AdjustHudCountdown();
+			}
+			if (GameState.AppGameStatus == GameStatus.GAME_STATUS_PLAY)
+			{
+				if (GameState.movementEntity == MovementEntity.MOVEMENT_ENTITY_PLAYERCHARACTER)
+				{
+					if (Input.IsActionPressed("ui_cancel"))
+					{
+						if (InputAssistance.KeyBounceCheck("cancel_key", 0.375f, 0.65f))
+						{
+
+							if (pauseMenu != null)
+							{
+								var pauseMenuVisible = pauseMenu.Visible;
+								pauseMenu.Visible = !pauseMenuVisible;
+							}
+							GD.Print("ui_cancel pressed");
+						}
+					}
+				}
 			}
 		}
 	}

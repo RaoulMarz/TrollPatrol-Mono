@@ -84,5 +84,13 @@ namespace TrollPatrolMono
 				}
 			}
 		}
+
+		public void CameraShake()
+		{
+			if (followCamera != null)
+			{
+				//followCamera.Translate()
+			}
+		}
 	}
 }

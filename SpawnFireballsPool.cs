@@ -32,8 +32,42 @@ namespace TrollPatrolMono
 			for (int idx = 0; idx < _allocate; idx++)
 			{
 				Guid id = Guid.NewGuid();
-				fireballPoolMap.Add(id.ToString(), new PairTimestamp<Fireball>(CreateFireball()) );
+				var pairValue = new PairTimestamp<Fireball>(CreateFireball());
+				fireballPoolMap.Add(id.ToString(), pairValue);
+				GD.Print($"SpawnFireballsPool() index={idx}, value={pairValue}");
 			}
+		}
+
+		public bool ItemInUse(string key)
+		{
+			bool res = false;
+			if (usedSlotMap != null)
+			{
+				res = usedSlotMap.ContainsKey(key);
+			}
+			return res;
+		}
+
+		public List<KeyValuePair<bool, Fireball>> SpawnFireballArray(int allocateCount)
+		{
+			if (allocateCount <= 0)
+				return null;
+			List<KeyValuePair<bool, Fireball>> res = new List<KeyValuePair<bool, Fireball>>();
+			if ((fireballPoolMap != null) && (fireballPoolMap.Count > 0))
+			{
+				//Choose an unused entry in the Map and return that
+				int icount = 0;
+				foreach (string xkey in fireballPoolMap.Keys)
+				{
+					if (ItemInUse(xkey) == false)
+					{
+						var itemPair = fireballPoolMap[xkey];
+						//res.Add(itemPair);
+						icount += 1;
+					}
+				}
+			}
+			return res;
 		}
 
 		public KeyValuePair<bool, Fireball> SpawnFireball()
@@ -44,8 +78,16 @@ namespace TrollPatrolMono
 				//Choose an unused entry in the Map and return that
 				foreach (string xkey in fireballPoolMap.Keys)
 				{
-
+					if (ItemInUse(xkey) == false)
+					{
+						var fireballItem = fireballPoolMap[xkey];
+						if (fireballItem != null)
+						{
+							return res;
+						}
+					}
 				}
+				//when an unused entry have been found, add this reference to usedSlotMap and return the entry
 			}
 			return res;
 		}

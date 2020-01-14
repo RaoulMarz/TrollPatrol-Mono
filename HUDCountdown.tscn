@@ -1,6 +1,9 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://HUDCountdown.cs" type="Script" id=1]
+[ext_resource path="res://Assets/Tiles/UX/health_bar_back.png" type="Texture" id=2]
+[ext_resource path="res://Assets/Tiles/UX/health_bar_over.png" type="Texture" id=3]
+[ext_resource path="res://Assets/Tiles/UX/health_bar_progress.png" type="Texture" id=4]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0.611765, 0.258824, 0.105882, 0.745098 )
@@ -45,11 +48,41 @@ __meta__ = {
 [node name="labelCountdown" type="Label" parent="panel-Countdown"]
 margin_left = 37.0
 margin_top = 70.0
-margin_right = 302.0
-margin_bottom = 108.0
+margin_right = 226.0
+margin_bottom = 111.0
 custom_fonts/font = SubResource( 4 )
 custom_colors/font_color = Color( 0.0196078, 0.0117647, 0.105882, 1 )
 text = "Countdown"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="labelCountdown2" type="Label" parent="panel-Countdown"]
+margin_left = 319.0
+margin_top = 73.0
+margin_right = 434.0
+margin_bottom = 114.0
+custom_fonts/font = SubResource( 4 )
+custom_colors/font_color = Color( 0.0196078, 0.0117647, 0.105882, 1 )
+text = "Health"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="progress-Health" type="TextureProgress" parent="panel-Countdown"]
+margin_left = 409.0
+margin_top = 69.0
+margin_right = 592.0
+margin_bottom = 109.0
+value = 100.0
+texture_under = ExtResource( 2 )
+texture_over = ExtResource( 3 )
+texture_progress = ExtResource( 4 )
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 8
+stretch_margin_right = 8
+stretch_margin_bottom = 8
 __meta__ = {
 "_edit_use_anchors_": false
 }
