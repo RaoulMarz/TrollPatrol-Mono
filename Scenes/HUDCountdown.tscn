@@ -1,0 +1,103 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://Scripts/HUDCountdown.cs" type="Script" id=1]
+[ext_resource path="res://Assets/Tiles/UX/health_bar_back.png" type="Texture" id=2]
+[ext_resource path="res://Assets/Tiles/UX/health_bar_over.png" type="Texture" id=3]
+[ext_resource path="res://Assets/Tiles/UX/health_bar_progress.png" type="Texture" id=4]
+[ext_resource path="res://new_theme.tres" type="Theme" id=5]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.611765, 0.258824, 0.105882, 0.745098 )
+
+[sub_resource type="DynamicFontData" id=2]
+font_path = "res://Assets/Fonts/ReyoldC2.ttf"
+
+[sub_resource type="DynamicFont" id=7]
+size = 38
+font_data = SubResource( 2 )
+
+[sub_resource type="DynamicFontData" id=8]
+font_path = "res://Assets/Fonts/ReyoldC2.ttf"
+
+[sub_resource type="DynamicFont" id=4]
+size = 30
+font_data = SubResource( 8 )
+
+[sub_resource type="DynamicFontData" id=5]
+font_path = "res://Assets/Fonts/regular_cozy.otf"
+
+[sub_resource type="DynamicFont" id=6]
+size = 36
+outline_size = 3
+font_data = SubResource( 5 )
+
+[node name="HUDCountdown" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = -424.0
+margin_bottom = -480.0
+script = ExtResource( 1 )
+
+[node name="panel-Countdown" type="Panel" parent="."]
+margin_right = 600.0
+margin_bottom = 120.0
+custom_styles/panel = SubResource( 1 )
+
+[node name="labelTitle" type="Label" parent="panel-Countdown"]
+margin_left = 19.0
+margin_top = 4.0
+margin_right = 568.0
+margin_bottom = 62.0
+theme = ExtResource( 5 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = SubResource( 7 )
+text = "Great balls of fire"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="labelCountdown" type="Label" parent="panel-Countdown"]
+margin_left = 37.0
+margin_top = 70.0
+margin_right = 157.0
+margin_bottom = 111.0
+custom_colors/font_color = Color( 0.0196078, 0.0117647, 0.105882, 1 )
+custom_fonts/font = SubResource( 4 )
+text = "Countdown"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="labelCountdownValue" type="Label" parent="panel-Countdown"]
+margin_left = 165.0
+margin_top = 74.0
+margin_right = 255.0
+margin_bottom = 115.0
+custom_colors/font_color = Color( 0.227451, 0.207843, 0.427451, 1 )
+custom_colors/font_outline_modulate = Color( 0.301961, 0.137255, 0.0196078, 1 )
+custom_fonts/font = SubResource( 6 )
+text = "00"
+
+[node name="labelHealth" type="Label" parent="panel-Countdown"]
+margin_left = 319.0
+margin_top = 70.0
+margin_right = 404.0
+margin_bottom = 111.0
+custom_colors/font_color = Color( 0.0196078, 0.0117647, 0.105882, 1 )
+custom_fonts/font = SubResource( 4 )
+text = "Health"
+
+[node name="progress-Health" type="TextureProgress" parent="panel-Countdown"]
+margin_left = 409.0
+margin_top = 69.0
+margin_right = 592.0
+margin_bottom = 109.0
+value = 100.0
+texture_under = ExtResource( 2 )
+texture_over = ExtResource( 3 )
+texture_progress = ExtResource( 4 )
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 8
+stretch_margin_right = 8
+stretch_margin_bottom = 8
