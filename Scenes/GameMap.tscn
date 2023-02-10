@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://Scripts/GameMap.cs" type="Script" id=1]
 [ext_resource path="res://tileset.tres" type="TileSet" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://Scenes/GameMenu.tscn" type="PackedScene" id=4]
 [ext_resource path="res://Scenes/HUDCountdown.tscn" type="PackedScene" id=5]
 [ext_resource path="res://Scenes/FixedObstruction.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Scenes/FireballThrower.tscn" type="PackedScene" id=7]
 
 [node name="GameMap" type="Node2D"]
 position = Vector2( 1, 0 )
@@ -27,6 +28,9 @@ margin_left = 170.0
 margin_top = -195.0
 margin_right = 170.0
 margin_bottom = -195.0
+
+[node name="FireballThrower" parent="canvasLayer" instance=ExtResource( 7 )]
+position = Vector2( 833, -170 )
 
 [node name="gameTimer" type="Timer" parent="."]
 wait_time = 0.05

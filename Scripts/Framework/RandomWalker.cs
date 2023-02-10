@@ -27,10 +27,20 @@ namespace TrollSmasher.Framework
         {
             listPathVertices.Clear();
             listPathVertices.Add(startPoint);
+            Vector2 differenceVector = endPoint - startPoint;
+            float yRange = differenceVector.y;
+            float yRangeStep = yRange / numPoints;
             RandomNumberGenerator rngGenner = new RandomNumberGenerator();
             for (int idxPt = 1; idxPt < numPoints; idxPt++)
             {
-                Vector2 newPoint = new Vector2();
+                float xDeviation = ( (differenceVector.x / numPoints) * idxPt) + rngGenner.RandfRange(1.0f, 50.0f);
+                if (rngGenner.Randi() % 100 <= 45)
+                    xDeviation = -xDeviation;
+                float yDeviation = rngGenner.RandfRange(2.0f, yRangeStep * 0.175f);
+                if (rngGenner.Randi() % 100 <= 38)
+                    yDeviation = -yDeviation;
+                Vector2 newPoint = new Vector2(startPoint.x + xDeviation, startPoint.y + (yRangeStep * idxPt) + yDeviation);
+                GD.Print($"RandomWalker, Generate(), point[{idxPt}] = {newPoint}");
                 listPathVertices.Add(newPoint);
             }
             listPathVertices.Add(endPoint);
@@ -42,7 +52,11 @@ namespace TrollSmasher.Framework
             if ( (listPathVertices != null) && (listPathVertices.Count > 0) )
             {
                 res = new Path2D();
-                Curve2D curvePath = new Curve2D();
+                Curve2D curvePath = new Curve2D();                
+                foreach (Vector2 valuePos in listPathVertices)
+                {
+                    curvePath.AddPoint(valuePos);
+                }
                 res.Curve = curvePath;
             }
             return res;

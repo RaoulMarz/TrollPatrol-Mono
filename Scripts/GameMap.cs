@@ -12,7 +12,12 @@ namespace TrollSmasher
 		private bool gameCountdownStarted = false;
 		private Timer gameTimer;
 		private int gameTimerCounter = 0;
-		private int markerFireballsLaunch = -1;
+		private uint markerFireballsLaunch = 0;
+		public uint simultaneousMaxFireballs { get; set; } = 12;
+		private uint minFireballsFlarePeriod = 4;
+		private uint maxFireballsFlarePeriod = 12;
+		private uint flarePeriodCounter = 0;
+		private uint flareCounter = 10;
 		private GameMenu gameMenu;
 		private GamePauseMenu pauseMenu;
 		private bool gamePlayActive = false;
@@ -21,7 +26,9 @@ namespace TrollSmasher
 		private HUDCountdown hudCountdown;
 		private Troll trollPlayer;
 		private CanvasLayer canvasLayer;
+		private FireballThrower fireballThrowExample;
 		private CountdownGameTimer fireballCountdownTimer = null;
+		private bool gamePaused = true;
 		/* DangerObstructions should be added manually */
 		private SpawnFireballsPool fireballsPool = null;
 		private bool startNewFireballsCascade = false;
@@ -46,9 +53,9 @@ namespace TrollSmasher
 			Diagnostics.PrintNullValueMessage(gameTimer, "gameTimer");
 			if (gameTimer != null)
 			{
-				gameTimer.WaitTime = 0.05f;				
+				gameTimer.WaitTime = 0.05f;
 				gameTimer.Connect("timeout", this, nameof(_on_GameTimer_timeout));
-				gameTimer.Start();
+				//gameTimer.Start();
 			}
 
 			tileMapWorld = this.GetNodeOrNull<TileMap>("tileMapWorld");
@@ -63,6 +70,10 @@ namespace TrollSmasher
 				debugLauncherCount.Visible = true;
 				debugLauncherCount.RectPosition = new Vector2(620, 90);
 				debugLauncherCount.Text = "999";
+				fireballThrowExample = canvasLayer.GetNodeOrNull<FireballThrower>("FireballThrower");
+				Diagnostics.PrintNullValueMessage(fireballThrowExample, "fireballThrowExample");
+				fireballThrowExample.Visible = true;
+				fireballThrowExample.SetWalkPathPosition(0.05f);
 			}
 
 			/* VERY IMPORTANT */
@@ -77,7 +88,7 @@ namespace TrollSmasher
 			random.Randomize();
 			GD.Print(random.Randfn());
 
-			markerFireballsLaunch = ((int)GD.Randi() % 200) + 50;
+			markerFireballsLaunch = (GD.Randi() % 200) + 50;
 			//LoadHudCountdown();
 			LoadTrollPlayer();
 			LoadGameMenu();
@@ -85,24 +96,36 @@ namespace TrollSmasher
 			InitialiseFireballPool();
 			Rect2 windowExtent = SceneUtilities.GetApplicationWindowExtent(this);
 			Vector2 bottomFireballZone = new Vector2(90.0f + GD.Randi() % (int)(windowExtent.Size.x - 120), windowExtent.Size.y);
-			fireballPathWalker = new RandomWalker(new Vector2(80.0f + (GD.Randi() % (int)(windowExtent.Size.x - 120)) , 10.0f + (GD.Randi() % 50)), bottomFireballZone, 30, 6.5f);
+			fireballPathWalker = new RandomWalker(new Vector2(80.0f + (GD.Randi() % (int)((windowExtent.Size.x / 2) - 120)), 10.0f + (GD.Randi() % 50)), bottomFireballZone, 30, 6.5f);
 			GD.Print($"GameMap, _Ready() end, markerFireballsLaunch = {markerFireballsLaunch}");
 		}
 
-		private void AnimateOnScreen(List<PairTimestamp<Fireball>> fireballsFall, int fireballs)
+		private void AnimateOnScreen(List<PairTimestamp<FireballThrower>> fireballsFall, uint fireballs, float topOffsetVariability)
 		{
 			if (fireballsFall != null)
 			{
-				int selectedCount = 0;
-				foreach (PairTimestamp<Fireball> fireballRec in fireballsFall)
+				var random = new RandomNumberGenerator();
+				random.Randomize();
+				uint selectedCount = 0;
+				uint itemCounter = 1;
+				GD.Print($"GameMap, AnimateOnScreen(), param fireballsFall list count = {fireballsFall.Count}");
+				Rect2 appExtent = SceneUtilities.GetApplicationWindowExtent(this);
+				foreach (PairTimestamp<FireballThrower> fireballRec in fireballsFall)
 				{
+					float yTopOffset = random.RandfRange(5.0f, 25.0f);
+					float xTopOffset = random.RandfRange(10.0f, appExtent.Size.x * 0.75f * topOffsetVariability);
+					var offsetPosition = new Vector2(xTopOffset, yTopOffset);									
+					fireballRec.pairX.Position += offsetPosition;
+					GD.Print($"GameMap, AnimateOnScreen(), fbthrower[{itemCounter}] = {fireballRec.pairX}, position-offset = {offsetPosition}");
+					canvasLayer.AddChild(fireballRec.pairX);
+					itemCounter += 1;
 					if (!fireballRec.pairX.Started)
 					{
 						fireballPathWalker.Generate();
 						Path2D fireFallPath = fireballPathWalker.GetVerticesPath();
-						if (fireFallPath == null)
+						if ( (fireFallPath == null) || (fireFallPath.Curve.GetPointCount() <= 1) )
 						{
-							GD.Print($"GameMap, AnimateOnScreen(), fireFallPath == null, fireballs = {fireballs}");
+							GD.Print($"GameMap, AnimateOnScreen(), fireFallPath == null or <too few points>, fireballs = {fireballs}");
 							return;
 						}
 						fireballRec.pairX.StartAnimation(fireFallPath);
@@ -114,12 +137,13 @@ namespace TrollSmasher
 			}
 		}
 
-		private void SpawnRandomFireballs(AlignmentArea alignment, int fireballs, float topOffsetVariability)
+		private void SpawnRandomFireballs(AlignmentArea alignment, uint fireballs, float topOffsetVariability)
 		{
 			var allocatedFireballs = fireballsPool.SpawnFireballArray(fireballs);
+			GD.Print($"GameMap, SpawnRandomFireballs(), param fireballs = {fireballs}, param topOffsetVariability = {topOffsetVariability}, alloced fireballs = {allocatedFireballs}");
 			if (alignment == AlignmentArea.ALIGNMENT_TOP)
 			{
-				AnimateOnScreen(allocatedFireballs, fireballs);
+				AnimateOnScreen(allocatedFireballs, fireballs, topOffsetVariability);
 			}
 		}
 
@@ -147,18 +171,24 @@ namespace TrollSmasher
 			Vector2 temp1 = SceneUtilities.GetExtentOffsetsForCenter(this, gameMenu);
 			if (trollPlayer != null)
 			{
-				Vector2 trollPos = trollPlayer.spriteTroll.Position; //.RectPosition;
+				Vector2 trollPos = trollPlayer.spriteTroll.Position;
 				Vector2 camPos = trollPlayer.followCamera.Position;
 				GD.Print($"GameMap, _on_GameMenu_Ready(), center offset={temp1}, troll position={trollPos}");
 			}
 			gameMenu.RectPosition = temp1;
 		}
 
+		private void _on_GameMenu_Start()
+		{
+
+		}
+
 		private void InitialiseFireballPool()
 		{
 			GD.Print("GameMap, InitialiseFireballPool() called");
 			fireballsPool = new SpawnFireballsPool(80);
-			if (fireballsPool != null) {
+			if (fireballsPool != null)
+			{
 				//fireballsPool.ItemInUse()
 			}
 		}
@@ -189,6 +219,7 @@ namespace TrollSmasher
 				gameMenu.Visible = true;
 				SceneUtilities.ThreadSleep(800);
 				gameMenu.Connect("ready", this, nameof(_on_GameMenu_Ready));
+				//gameMenu.Connect("start", this, nameof(_on_GameMenu_Start));
 				GD.Print($"GameMap, LoadGameMenu() connect 'ready' signal, canvasLayer={canvasLayer}");
 				if (canvasLayer != null)
 					canvasLayer.AddChild(gameMenu);
@@ -236,11 +267,21 @@ namespace TrollSmasher
 			if (hudCountdown != null)
 				hudCountdown.Visible = true;
 			gamePlayActive = true;
+			gamePaused = false;
+			gameTimer.Start();
 		}
 
 		public void _on_GameTimer_timeout()
 		{
+			if (gamePaused)
+				return;
 			gameTimerCounter += 1;
+			if ((gameTimerCounter >= 20) && (gameTimerCounter < 220))
+			{
+				fireballThrowExample.SetWalkPathPosition(0.005f * (gameTimerCounter - 20));
+				if (gameTimerCounter == 219)
+					fireballThrowExample.Visible = false;
+			}
 			if (gameTimerCounter % 100 == 1)
 				GD.Print($"GameMap, _on_GameTimer_timeout(), gameTimerCounter = {gameTimerCounter}");
 			debugLauncherCount.Text = $"{gameTimerCounter - markerFireballsLaunch}";
@@ -253,9 +294,16 @@ namespace TrollSmasher
 					GD.Print($"GameMap, _on_GameTimer_timeout(), update secondsDurationFireball = {secondsDurationFireball}");
 					secondsDurationFireball = durationChangeValue;
 					hudCountdown.AdjustCountdownValue(secondsDurationFireball);
-					int fireballs = ((int)GD.Randi() % 48) + 8;
-					float topOffsetVariability = 0.335f;
-					SpawnRandomFireballs(AlignmentArea.ALIGNMENT_TOP, fireballs, topOffsetVariability);
+					flarePeriodCounter += 1;
+					if (flarePeriodCounter >= flareCounter)
+					{
+						GD.Print($"GameMap, _on_GameTimer_timeout(), unallocated fireball pool = {fireballsPool.UnallocatedCount()}");
+						flarePeriodCounter = 0;
+						flareCounter = (GD.Randi() % (maxFireballsFlarePeriod - minFireballsFlarePeriod) ) + minFireballsFlarePeriod;
+						uint fireballs = (GD.Randi() % simultaneousMaxFireballs) + 4;
+						float topOffsetVariability = 0.335f;
+						SpawnRandomFireballs(AlignmentArea.ALIGNMENT_TOP, fireballs, topOffsetVariability);
+					}
 				}
 			}
 			if (gameTimerCounter == markerFireballsLaunch)
@@ -263,7 +311,8 @@ namespace TrollSmasher
 				GD.Print($"GameMap, _on_GameTimer_timeout(), markerFireballsLaunch = {markerFireballsLaunch} reached");
 				secondsDurationFireball = 90;
 				hudCountdown.AdjustCountdownValue(secondsDurationFireball);
-				refFireballCountdownTime = DateTime.Now;			
+				refFireballCountdownTime = DateTime.Now;
+				flareCounter = (uint)(secondsDurationFireball * 0.1);
 			}
 		}
 
@@ -291,6 +340,7 @@ namespace TrollSmasher
 							{
 								var pauseMenuVisible = pauseMenu.Visible;
 								pauseMenu.Visible = !pauseMenuVisible;
+								gamePaused = pauseMenu.Visible;
 							}
 							GD.Print("ui_cancel pressed");
 						}
